@@ -1,0 +1,214 @@
+// game.js
+
+// === Global Game State ===
+const gameState = {
+  inGame: false,
+  multiplayerActive: false,
+  weatherType: 'clear',
+  eventActive: false,
+  loreEntries: [],
+  augments: [],
+  mission: null,
+  volume: 70,
+  colorblindMode: false,
+  textSize: 'medium',
+};
+
+// === DOM Elements ===
+const mainMenu = document.getElementById('main-menu');
+const gameCanvas = document.getElementById('gameCanvas');
+const ctx = gameCanvas.getContext('2d');
+
+const augmentPanel = document.getElementById('augment-panel');
+const droneStatus = document.getElementById('drone-status');
+const weatherStatus = document.getElementById('weather-status');
+const eventTimer = document.getElementById('event-timer');
+const loreDatabase = document.getElementById('lore-database');
+const combatStatus = document.getElementById('combat-status');
+const missionObjectives = document.getElementById('mission-objectives');
+const multiplayerStatus = document.getElementById('multiplayer-status');
+const settingsMenu = document.getElementById('settings-menu');
+
+const startGameBtn = document.getElementById('start-game');
+const coOpBtn = document.getElementById('co-op-mode');
+const editMissionBtn = document.getElementById('edit-mission');
+const settingsBtn = document.getElementById('settings-button');
+const closeSettingsBtn = document.getElementById('close-settings');
+
+const volumeSlider = document.getElementById('volume-slider');
+const colorblindToggle = document.getElementById('colorblind-toggle');
+const textSizeSelect = document.getElementById('text-size-select');
+
+const devConsole = document.getElementById('dev-console');
+const consoleInput = document.getElementById('console-input');
+const consoleSubmit = document.getElementById('console-submit');
+const consoleOutput = document.getElementById('console-output');
+
+// === Initialization ===
+function init() {
+  attachEventListeners();
+  updateUI();
+  drawInitialCanvas();
+  logToConsole('Game initialized. Ready to start.');
+}
+
+// === Event Listeners ===
+function attachEventListeners() {
+  startGameBtn.onclick = () => {
+    gameState.inGame = true;
+    mainMenu.style.display = 'none';
+    logToConsole('Game started.');
+    startGameLoop();
+  };
+
+  coOpBtn.onclick = () => {
+    gameState.multiplayerActive = true;
+    mainMenu.style.display = 'none';
+    multiplayerStatus.textContent = 'Multiplayer: Connected';
+    logToConsole('Multiplayer co-op mode activated.');
+    startGameLoop();
+  };
+
+  editMissionBtn.onclick = () => {
+    alert('Mission editor coming soon!');
+    logToConsole('Mission editor requested.');
+  };
+
+  settingsBtn.onclick = () => {
+    settingsMenu.classList.remove('hidden');
+    logToConsole('Settings menu opened.');
+  };
+
+  closeSettingsBtn.onclick = () => {
+    settingsMenu.classList.add('hidden');
+    logToConsole('Settings menu closed.');
+  };
+
+  volumeSlider.oninput = (e) => {
+    gameState.volume = e.target.value;
+    logToConsole(`Volume set to ${gameState.volume}`);
+  };
+
+  colorblindToggle.onchange = (e) => {
+    gameState.colorblindMode = e.target.checked;
+    updateUI();
+    logToConsole(`Colorblind mode ${gameState.colorblindMode ? 'enabled' : 'disabled'}`);
+  };
+
+  textSizeSelect.onchange = (e) => {
+    gameState.textSize = e.target.value;
+    updateUITextSize();
+    logToConsole(`Text size set to ${gameState.textSize}`);
+  };
+
+  consoleSubmit.onclick = () => {
+    const cmd = consoleInput.value.trim();
+    if (cmd) {
+      runDevCommand(cmd);
+      consoleInput.value = '';
+    }
+  };
+}
+
+// === UI Updates ===
+function updateUI() {
+  augmentPanel.textContent = `Augments: ${gameState.augments.length}`;
+  droneStatus.textContent = 'Drones: Idle';
+  weatherStatus.textContent = `Weather: ${gameState.weatherType}`;
+  eventTimer.textContent = gameState.eventActive ? 'Event Active!' : 'No Events';
+  loreDatabase.textContent = `Lore Entries: ${gameState.loreEntries.length}`;
+  combatStatus.textContent = 'Combat: Standby';
+  missionObjectives.textContent = gameState.mission ? `Mission: ${gameState.mission.description}` : 'No active mission';
+  multiplayerStatus.textContent = gameState.multiplayerActive ? 'Multiplayer: Connected' : 'Multiplayer: Offline';
+}
+
+function updateUITextSize() {
+  document.body.style.fontSize = {
+    small: '12px',
+    medium: '16px',
+    large: '20px',
+  }[gameState.textSize];
+}
+
+// === Drawing Functions ===
+function drawInitialCanvas() {
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+  ctx.fillStyle = '#00ffff';
+  ctx.font = '24px Orbitron, sans-serif';
+  ctx.fillText('Neon Nexus Loading...', 20, 50);
+}
+
+// === Game Loop ===
+function startGameLoop() {
+  function loop() {
+    updateGame();
+    drawGame();
+    if (gameState.inGame) {
+      requestAnimationFrame(loop);
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+function updateGame() {
+  // TODO: Implement gameplay mechanics, AI, combat, etc.
+  // Placeholder for updates
+}
+
+function drawGame() {
+  ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+  // Example: draw player placeholder
+  ctx.fillStyle = '#0ff';
+  ctx.fillRect(gameCanvas.width / 2 - 10, gameCanvas.height / 2 - 10, 20, 20);
+
+  // TODO: draw enemies, environment, UI overlays
+}
+
+// === Developer Console Commands ===
+function logToConsole(message) {
+  consoleOutput.textContent += message + '\n';
+  consoleOutput.scrollTop = consoleOutput.scrollHeight;
+}
+
+function runDevCommand(cmd) {
+  logToConsole(`> ${cmd}`);
+
+  switch (cmd.toLowerCase()) {
+    case 'spawn augment':
+      gameState.augments.push('Basic Augment');
+      updateUI();
+      logToConsole('Spawned a basic augment.');
+      break;
+
+    case 'start event':
+      gameState.eventActive = true;
+      updateUI();
+      logToConsole('Event started.');
+      break;
+
+    case 'end event':
+      gameState.eventActive = false;
+      updateUI();
+      logToConsole('Event ended.');
+      break;
+
+    case 'toggle weather':
+      gameState.weatherType = gameState.weatherType === 'clear' ? 'neon fog' : 'clear';
+      updateUI();
+      logToConsole(`Weather toggled to ${gameState.weatherType}.`);
+      break;
+
+    case 'help':
+      logToConsole('Available commands: spawn augment, start event, end event, toggle weather, help');
+      break;
+
+    default:
+      logToConsole('Unknown command. Type "help" for commands.');
+  }
+}
+
+// === Initialize Game on Page Load ===
+window.onload = init;
